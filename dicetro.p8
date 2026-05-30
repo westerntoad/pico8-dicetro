@@ -1,0 +1,495 @@
+pico-8 cartridge // http://www.pico-8.com
+version 43
+__lua__
+-- dicetro
+-- by westerntoad
+
+particles = {}
+can_slowdown = false
+selected = 1
+body = ''
+sub_body = ''
+rerolls_left = 5
+shop = {}
+
+ante = {
+	1, 3, 5, 7, 10, 15, 20,
+	25, 30, 35, 40, 45, 50,
+	60, 70, 80, 100, 125, 150,
+	32767
+}
+-- items
+item_info = {}
+item_info[0] = {
+	name = '1 pip',
+	price = 5
+}
+item_info[1] = {
+	name = '2 pip',
+	price = 5
+}
+item_info[2] = {
+	name = '3 pip',
+	price = 5
+}
+item_info[3] = {
+	name = '4 pip',
+	price = 5
+}
+item_info[4] = {
+	name = '5 pip',
+	price = 5
+}
+item_info[5] = {
+	name = '6 pip',
+	price = 5
+}
+
+#include common.lua
+#include shop.lua
+
+function create_die()
+    local die = {}
+    die.shown = true
+    die.x = 48
+    die.y = 48
+    die.vx = rnd(100 * 10) / 100 - 5
+    die.vy = rnd(100 * 10) / 100 - 5
+    die.ang = 0
+    die.rot = 0
+    die.rot_speed = rnd(15) + 1
+    die.faces = {1, 2, 3, 4, 5, 6}
+    die.to_reroll = false
+    return die
+end
+
+function update_die(die)
+ -- velocity
+ die.x = max(0, min(110, die.x + die.vx * game_speed))
+ die.y = min(die.y + die.vy * game_speed, 112)
+ 
+ -- hitting floor
+ if (die.y + 10) >= 110 then
+ 	-- first time hitting floor
+ 	if die.rot_speed != 0 then
+ 		die.rot_speed = 0
+ 		die.ang = 0
+ 		
+ 		score_die(die)
+ 		local all_scored = true
+ 		for _,d2 in pairs(dice) do
+ 			if (d2.rot_speed != 0) all_scored = false
+ 		end
+ 		if all_scored then
+ 			if rerolls_left <= 0 then
+	 			state = 2
+                                state_t = 0
+                                calc_score()
+ 			else
+	 			state = 1
+	 		end
+	 		state_t = 0
+ 		end
+ 	end
+ 	die.vx *= 0.1 / game_speed
+ 	die.vy *= 0.1 / game_speed
+ else
+ 	die.vy += 0.2 * game_speed
+ end
+ 
+ -- hitting side
+ if die.x <= 0 or die.x >= 110 then
+ 	die.vx *= -0.5
+ end
+
+ -- rotations
+	die.rot += game_speed
+	if die.rot_speed != 0 and die.rot >= die.rot_speed then
+		-- change angle
+		die.rot = 0
+		die.ang = (die.ang+1) % 8
+		
+		-- roll faces
+		local found = flr(rnd(5)) + 2
+		local swap = die.faces[found]
+		die.faces[found] = die.faces[1]
+		die.faces[1] = swap
+	end
+end
+
+function score_die(die)
+	score += die.faces[1]
+
+	local num = {}
+	num.x = die.x + 8
+	num.y = die.y
+	num.dx = 0
+	num.dy = -1
+	num.lifetime = 50
+	num.content = die.faces[1]
+	add(particles, num)
+end
+
+function update_particle(p)
+	if (p.lifetime <= 0) del(particles, p)
+	p.lifetime -= game_speed
+	
+	p.x += p.dx * game_speed
+	p.y += p.dy * game_speed
+end
+
+function draw_particle(p)
+	print(p.content, p.x, p.y, 10)
+end
+
+
+
+function gen_shop()
+	shop.items = {0, 1, 2}
+	shop.vy = 0
+	shop.y = 128
+	shop.sel = 1
+end
+
+function draw_shop()
+ -- grating
+	fillp(░)
+	rectfill(0, shop.y, 128, 128, 5)
+	fillp(▤)
+	rectfill(0, shop.y, 128, 128, 5)
+	fillp(█)
+	
+	-- controls
+	local x = 20
+	local y = shop.y + 4
+	local w = 40
+	pset(x + 2, y-4, 4)
+	pset(x + 2, y-3, 6)
+	pset(x + 2, y-2, 4)
+	pset(x + 2, y-1, 6)
+	rectfill(x, y, x+w, shop.y + 10, 4)
+	rectfill(128-(x+w), y, 128-x, shop.y + 10, 4)
+	if  shop.y < 110 then
+		local text = '🅾️ buy'
+		print(text, x+(w-(#text+1)*4)/2, y+1, 7)
+		text = '❎ info' 
+		print(text, (128-x-w)+(w-(#text+1)*4)/2, y+1, 7)
+	end
+	
+	-- bank
+	x = 15
+	y = shop.y + 20
+	rectfill(x, y, x+29, y+8, 5)
+	print('$' .. bank, x+1, y+2, 11)
+	
+	-- ante
+	x += 34
+	local text = '-$' .. ante[curr_ante]
+	rectfill(x, y, x+29, y+8, 5)
+	print(text, x+(28-(#text-1)*4)/2, y+2, 8)
+	
+	-- rerolls
+	x += 35
+	text = '⧗' .. rerolls
+	rectfill(x, y, x+29, y+8, 5)
+	print(text, x+28-(#text+1)*4, y+2, 12)
+	
+	-- info box
+	--rectfill(0, shop.y + 80, 128, 128, 7)
+	
+	-- items
+	for i=1,3 do
+		local gap = 12
+		local w = 25
+		local h = 32
+		local x = 64 - (w+gap) - w / 2 + (i-1)*(w+gap)
+		local y = shop.y + 32
+		--sspr(0, 32, 21, 30, 40, shop.y + 40)
+		rectfill(x, y, x + w, y + h, 7)
+		rect(x, y, x + w, y + h, 6)
+		
+		local info = item_info[shop.items[i]]
+		local price = '-$' .. info.price
+		if shop.items[i] < 6 then
+			local di_x = x + w/2 - 8
+			local di_y = y + 2
+			draw_face(shop.items[i]+1, di_x, di_y, false)
+		end
+		print(price, x + w/2 - #price*2, y + w/2 + 10, 8)
+		
+		-- cursor
+		if i == shop.sel then
+			local cw = 7
+			local ch = 8
+			local bump = 0
+			if (flr(state_t) % 30 > 15) bump -= 2
+			sspr(24, 18, cw, ch, x+w/2-cw/2, y+h+4 + bump)
+		end
+	end
+	
+	
+end
+
+function update_shop()
+	if (btnp(0)) shop.sel = max(1, shop.sel-1)
+	if (btnp(1)) shop.sel = min(3, shop.sel+1)
+	
+
+ shop.y += shop.vy
+ 
+ if shop.y < 4 and abs(shop.vy) < 0.05 then
+		shop.vy = 0
+		shop.y = 0
+ else
+		shop.vy = max(-8, shop.vy - 0.3)
+ end
+ if shop.y < 0 then
+ 	shop.vy *= -0.3
+ 	shop.y = 0
+ end
+end
+
+function _init()
+	palt(0, false)
+	palt(14, true)
+	
+	
+	state = 0
+	state_t = 0
+	dice = {}
+	for i=1,(rnd(6) + 1) do
+		add(dice, create_die())
+ end
+end
+
+-- game loop
+function _draw()
+	-- background
+	cls(1)
+	-- floor
+	rectfill(0, 110, 128, 128, 3)
+	
+	for _,die in pairs(dice) do
+		if (die.shown) draw_die(die)
+		--print(die.vx)
+		--print(die.vy)
+	end
+	
+	for i,die in pairs(dice) do
+		if die.rot_speed == 0 then
+		 local pad = 2
+			local x = 64 - #dice*8 + (i-1)*16
+			local y = 10
+			if (die.to_reroll) y += 5
+		 draw_face(die.faces[1], x, y, i == selected)
+		end
+	end
+	
+	for _,p in pairs(particles) do
+		draw_particle(p)
+	end
+		
+	if state == 1 then
+		local o_action = 'unlock'
+		if (dice[selected].to_reroll) o_action = 'lock'
+		print('🅾️ ' .. o_action, 28, 48, 7)
+		
+		
+		local no_dice_locked = true
+		for _,die in pairs(dice) do
+			if (die.to_reroll) no_dice_locked = false
+		end
+		
+		if no_dice_locked then
+			print('❎ submit', 72, 48, 8)
+		else
+			print('❎ reroll', 72, 48, 7)
+			print('(⧗' .. rerolls_left .. ' left)', 70, 56, 12)
+		end
+	end
+	
+	-- score
+	local count_digits = 0
+	if (score == 0) count_digits = 1
+	while 10 ^ count_digits <= score do
+		count_digits += 1
+	end
+	if (score < 0) count_digits = 1
+	print(max(0, score), (128 - 4 * count_digits) / 2, 3, 10)
+	
+	if state == 2 then
+		print(body, 64 - (#body * 2), 64, 7)
+		print(sub_body, 64 - (#sub_body * 2), 72, 8)
+		
+		local dx = min(1, state_t - 45)
+		if (score < 0) dx = min(1, score + 30)
+		print('$' .. bank, dx, 3, 11)
+	end
+	
+	if state == 3 then
+		draw_shop()
+	end
+	
+	-- debug
+	--print('spd. ' .. game_speed, 7)
+	--print('st.  ' .. state, 0, 40, 7)
+	--print('stt. ' .. state_t, 0, 47, 7)
+	--print('sel. ' .. selected, 0, 54, 7)
+end
+
+function _update()
+	-- input
+	if btnp(0) then
+		if state == 1 then
+			selected = max(selected-1, 1)
+		end
+	end
+	
+	if btnp(1) then
+		if state == 1 then
+			selected = min(selected+1, #dice)
+		end
+	end
+	
+	if btnp(4) then
+		if state == 1 then
+			dice[selected].to_reroll = not dice[selected].to_reroll
+		end
+	end
+	
+	if btnp(5) then
+		if state == 1 then
+			local no_dice_locked = true
+			
+			for _,die in pairs(dice) do
+				if (die.to_reroll) no_dice_locked = false
+			end
+			
+			if no_dice_locked then
+				state = 2
+				state_t = 0
+                                calc_score()
+			else
+				rerolls_left -= 1
+				for _,die in pairs(dice) do
+					if die.to_reroll  then
+						die.x = 48
+						die.y = 48
+						die.vx = rnd(100 * 10) / 100 - 5
+						die.vy = rnd(100 * 10) / 100 - 5
+						die.ang = 0
+						die.rot = 0
+						die.rot_speed = 5
+						die.to_reroll = false
+					end
+				end
+				state = 0
+				state_t = 0
+			end
+		end
+	end
+
+	state_t += game_speed
+	
+	if state == 2 and state_t > 60 then
+		if (score > 0) bank += 1
+		score -= 1
+		
+		if score < -60 then
+			state = 3
+			state_t = 0
+			gen_shop()
+		end
+	end
+	
+	if (state > 2) update_shop()
+
+	-- update entities
+	local unscored_dice = 0
+	local max_y = 0
+	if state < 2 then
+		for _,die in pairs(dice) do
+			update_die(die)
+			if die.rot_speed != 0 then
+				max_y = max(max_y, die.y + 10)
+				unscored_dice += 1
+			end
+		end
+	end
+	
+	for _,p in pairs(particles) do
+		update_particle(p)
+	end
+	
+	-- update game speed
+	local to_floor = 110 - max_y
+	if can_slowdown and to_floor < 20 then
+		game_speed = min(1, 0.02 * max(3, to_floor) * unscored_dice * unscored_dice)
+	else
+		game_speed = min(1, game_speed + 0.2)
+	end
+end
+
+__gfx__
+eeeeeeee66eeeeeeeeeeeeee66eeeeeeeeeeeeee6666666666eeeeeeeeeeeeeeeeeeeeee00eeeeeeee0000eeeeee0000eeeeee0000eeeeee0000000000000000
+eeeeee667766eeeeeeeeeee67666eeeeeeeeeeee6777777776eeeeeeeeeeeeeeeeeeeeee00eeeeeeee0000eeeeee0000eeeeee0000eeeeee0000000000000000
+eeee6677777766eeeeeeee67767766eeeeeeeee677777777676eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000000000
+ee66777777777766eeeee67776777766eeeeeee677777777676eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000000000
+667777777777777766ee6777776777776eeeee67777777767776eeeeee00eeeeeeeeeeeeeeeeee00eeeeeeeeeeeeeeeeee00eeee00eeeeee0000000000000000
+676677777777776676e67777776777776eeeee67777777767776eeeeee00eeeeeeeeeeeeeeeeee00eeeeeeeeeeeeeeeeee00eeee00eeeeee0000000000000000
+6777667777776677766777777776777776eee6777777776777776eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000000000
+6777776677667777766777777776777776eee6777777776777776eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000000000
+67777777667777777667777777766777776e666666666677777776eeeeeeeeee00eeeeeeee00eeeeeeee00eeeeee0000eeeeee0000eeeeee0000000000000000
+677777776677777776e6777777666667776e666666666677777776eeeeeeeeee00eeeeeeee00eeeeeeee00eeeeee0000eeeeee0000eeeeee0000000000000000
+677777776677777776e67777766777766776e6777777776777776e00000000000000000000000000000000000000000000000000000000000000000000000000
+677777776677777776ee6777667777777666e6777777776777776e00000000000000000000000000000000000000000000000000000000000000000000000000
+677777776677777776ee677667777777776eee67777777767776ee00000000000000000000000000000000000000000000000000000000000000000000000000
+667777776677777766eee6667777777776eeee67777777767776ee00000000000000000000000000000000000000000000000000000000000000000000000000
+ee66777766777766eeeeee66777777776eeeeee677777777676eee00000000000000000000000000000000000000000000000000000000000000000000000000
+eeee6677667766eeeeeeeeee66777776eeeeeee677777777676eee00000000000000000000000000000000000000000000000000000000000000000000000000
+eeeeee666666eeeeeeeeeeeeee66776eeeeeeeee6777777776eeee00000000000000000000000000000000000000000000000000000000000000000000000000
+eeeeeeee66eeeeeeeeeeeeeeeeee66eeeeeeeeee6666666666eeee00000000000000000000000000000000000000000000000000000000000000000000000000
+eeeeeeeeeee0eeeeeee0eeeeeee7eeeeeeeeeee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+eeeeeeeeeeeeeeeeeeeeeeeeeeeaeeeeeeeeeee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+eee0eeeeeeeeeeeeeee0eeeeeeaa7eeeeeeeeee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+eeeeeeeeeeeeeeeeeeeeeeeeeeaa7eeeeeeeeee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+eeeeeeeeeeee0eeeeee0eeeeeaaaa7eeeeeeeee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+eee0eeeeeee0eeeeeee0eeeeeaaaaaeeeeeeeee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+eeeeeeeeeeeeeeeeeeeee0eeaaaaaaaeeeeeeee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0eeeeee00ee0ee0e0eeeeeeeaaaaaaaeeeeeeee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+eeeeeeeeeeeeeeeeee0eeeeeeeeeeeeeeeeeeee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+eeee0eeeeee0eeeeeeee0eee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+eeee6666666666666666600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+ee667767777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+66777767777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+66666667777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+66777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777777777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777767777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777767777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+67777777777777767777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+677777777777776e6777600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+666666666666666e6666600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
