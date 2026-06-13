@@ -29,13 +29,15 @@ Casual/roguelike
 ### Team
 
 | Name                  | Role(s)                           |
-| --------------------- | --------------------------------- |
+| :-------------------- | :-------------------------------- |
 | Abraham Engebretson   | Programming, Music & Sound Design |
 |                       |                                   |
 
 ## Product Design
 
 ### Player Experience and Game POV
+
+The key element that makes this game enjoying and satisfying to play is immediate feedback.
 
 ### Visual and Audio Style
 
@@ -47,9 +49,23 @@ This game will be entirely free and available to play online and in-browser. No 
 
 ### Platform(s) & Technology
 
-This game will be made using the [Pico-8 fantasy console](https://www.lexaloffle.com/pico-8.php). By using this console, an arbitrary restriction on CPU speed, token count for source code, and storage space for assets has been set.
+This game will be made using the [PICO-8 fantasy console](https://www.lexaloffle.com/pico-8.php). By using this console, arbitrary technological restrictions have been placed on a number of different aspects of the host machine including
+
+* CPU speed,
+* token count in the source code,
+* storage space for assets,
+* display resolution,
+* and color palette.
+
+By following the restrictions of the PICO-8, it is possible to easily host these games in-browser on static webpages, via a local PICO-8 emulator, as well as on Single-Board-Computer retro handhelds.
+
+#### Tooling
 
 Included in this fantasy console is a [diverse API toolset](https://iiviigames.github.io/pico8-api/) and built-in editors for music and sprite creation.
+
+#### File Structure
+
+When developing for the PICO-8 fantasy console, you have the option of combining all source code into a sole `.p8` file or to include from external `.lua` files. The `_init()`, `_draw()`, and `_update()` API calls will be in the `.p8` file, while all other code will be in logically separated `.lua` files.
 
 ### Scope & Timeline
 
@@ -65,9 +81,9 @@ This game has no set timeline, but is planned to have a feature-complete and ful
 
 #### Items
 
-| Item Name | Item Description | Item Function | Cost |
-| --------- | ---------------- | ------------- | ---- |
-|           |                  |               |      |
+| Item Name | Item Description                                      | Item Function                     | Rarity      |
+| :-------- | :---------------------------------------------------- | :-------------------------------- | :---------: |
+|           |                                                       |                                   |             |
 
 
 
