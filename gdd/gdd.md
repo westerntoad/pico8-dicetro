@@ -22,8 +22,6 @@ Dicetro is a retro, Balatro-inspired, roguelike where the player continuously ro
 
 Casual/roguelike
 
-### Target Audience
-
 ### Unique Selling Points
 
 ### Team
@@ -37,7 +35,7 @@ Casual/roguelike
 
 ### Player Experience and Game POV
 
-The key element that makes this game enjoying and satisfying to play is immediate feedback.
+The key element that makes this game enjoying and satisfying to play is immediate feedback. You should recerive immediate visual and/or auditory feedback when a dice lands, is scoreed, an effect is triggered, and when you pay the round requirement. When advancing through rounds, or dice are rolling, the player should need to wait the minimum amount of time between each action. While there might be some strategy involved in picking items from the shop, the goal is to be casual and engaging as opposed to require critical thinking.
 
 ### Visual and Audio Style
 
@@ -54,8 +52,9 @@ This game will be made using the [PICO-8 fantasy console](https://www.lexaloffle
 * CPU speed,
 * token count in the source code,
 * storage space for assets,
-* display resolution,
-* and color palette.
+* 128x128 pixel display resolution,
+* 16-color preset color palette.
+* 6-button input with optional touch screen support
 
 By following the restrictions of the PICO-8, it is possible to easily host these games in-browser on static webpages, via a local PICO-8 emulator, as well as on Single-Board-Computer retro handhelds.
 
@@ -75,15 +74,21 @@ This game has no set timeline, but is planned to have a feature-complete and ful
 
 ### Core Loops
 
-### Objectives & Progression
+The player will start by rolling a single 6-sided die and earn points equal to the total number of pips of the top-most face when landed. After the roll is scored, the player enters the shop where you can buy items from a selection of three
 
-### Game Systems
+![A screenshot of a prototype version of the game in the shop with three items, the toll of the next round, and the number of available rerolls.](./images/gdd.md)
+
+### Objectives & Progression
 
 #### Items
 
-| Item Name | Item Description                                      | Item Function                     | Rarity      |
-| :-------- | :---------------------------------------------------- | :-------------------------------- | :---------: |
-|           |                                                       |                                   |             |
+| Item Name                       | Item Description                                      | Item Function                     | Rarity      |
+| :------------------------------ | :---------------------------------------------------- | :-------------------------------- | :---------- |
+|                                 |                                                       |                                   |             |
+
+### Game Systems
+
+
 
 
 
