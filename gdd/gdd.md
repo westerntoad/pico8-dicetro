@@ -76,7 +76,7 @@ This game has no set timeline, but is planned to have a feature-complete and ful
 
 The player will start by rolling a single 6-sided die and earn points equal to the total number of pips of the top-most face when landed. After the roll is scored, the player enters the shop where you can buy items from a selection of three
 
-![A screenshot of a prototype version of the game in the shop with three items, the toll of the next round, and the number of available rerolls.](./images/gdd.md)
+![A screenshot of a prototype version of the game in the shop with three items, the toll of the next round, and the number of available rerolls.](./images/shop-prototype.png)
 
 ### Objectives & Progression
 
