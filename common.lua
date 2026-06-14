@@ -1,3 +1,45 @@
+particles = {}
+can_slowdown = false
+selected = 1
+body = ''
+sub_body = ''
+rerolls_left = 5
+shop = {}
+
+ante = {
+    1, 3, 5, 7, 10, 15, 20,
+    25, 30, 35, 40, 45, 50,
+    60, 70, 80, 100, 125, 150,
+    32767
+}
+
+-- items
+item_info = {}
+item_info[0] = {
+    name = '1 pip',
+    price = 5
+}
+item_info[1] = {
+    name = '2 pip',
+    price = 5
+}
+item_info[2] = {
+    name = '3 pip',
+    price = 5
+}
+item_info[3] = {
+    name = '4 pip',
+    price = 5
+}
+item_info[4] = {
+    name = '5 pip',
+    price = 5
+}
+item_info[5] = {
+    name = '6 pip',
+    price = 5
+}
+
 curr_ante = 1
 -- 0 = moving dice
 -- 1 = picking dice

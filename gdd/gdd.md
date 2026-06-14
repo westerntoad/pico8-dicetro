@@ -1,5 +1,7 @@
 # Dicetro Concept Document
 
+Rev. 0.4
+
 *[Modeled after Michael Sellers' template found here](https://drive.google.com/file/d/1-yiF2Pq-OgJaTXsMAQbIckoDzGINz26O/view?usp=sharing)*
 
 ## Table of Contents
@@ -64,7 +66,7 @@ Included in this fantasy console is a [diverse API toolset](https://iiviigames.g
 
 #### File Structure
 
-When developing for the PICO-8 fantasy console, you have the option of combining all source code into a sole `.p8` file or to include from external `.lua` files. The `_init()`, `_draw()`, and `_update()` API calls will be in the `.p8` file, while all other code will be in logically separated `.lua` files.
+When developing for the PICO-8 fantasy console, you have the option of combining all source code into a sole `.p8` file or to include from external `.lua` files. The `_init()`, `_draw()`, and `_update()` API calls will be in a `main.lua` file, while all other code will be in logically separated `.lua` files. The `.p8` file will only contain `#include` statements
 
 ### Scope & Timeline
 
@@ -74,7 +76,7 @@ This game has no set timeline, but is planned to have a feature-complete and ful
 
 ### Core Loops
 
-The player will start by rolling a single 6-sided die and earn points equal to the total number of pips of the top-most face when landed. After the roll is scored, the player enters the shop where you can buy items from a selection of three
+The player will start by rolling a single 6-sided die and earn points equal to the total number of pips of the top-most face when landed. After the roll is scored, the player enters the shop where you can buy from a selection of three different items. Each item can have varying effects from unlocking dice slots, upgrading existing dice, gaining additional rerolls, and granting permanent buffs. Below each item is a description of its function. After purchasing from the shop, the player will roll the dice they own again, repeating the process as rounds. All rounds after the first will require the player to pay an increasing toll before entering the shop again that increases after each round. At some point the toll will become too high to pay and the player will lose and the total score will be displayed which is the sum of all points earned throughout the game.
 
 ![A screenshot of a prototype version of the game in the shop with three items, the toll of the next round, and the number of available rerolls.](./images/shop-prototype.png)
 
