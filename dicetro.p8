@@ -5,6 +5,7 @@ __lua__
 -- by westerntoad
 
 #include common.lua
+#include items.lua
 #include shop.lua
 #include old.lua
 #include main.lua

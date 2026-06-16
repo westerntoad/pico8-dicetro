@@ -52,7 +52,7 @@ function update_die(die)
         die.vx *= -0.5
     end
 
--- rotations
+    -- rotations
     die.rot += game_speed
     if die.rot_speed != 0 and die.rot >= die.rot_speed then
         -- change angle
@@ -161,9 +161,9 @@ function draw_shop()
         local info = item_info[shop.items[i]]
         local price = '-$' .. info.price
         if shop.items[i] < 6 then
-                local di_x = x + w/2 - 8
-                local di_y = y + 2
-                draw_face(shop.items[i]+1, di_x, di_y, false)
+            local di_x = x + w/2 - 8
+            local di_y = y + 2
+            draw_face(shop.items[i]+1, di_x, di_y, false)
         end
         print(price, x + w/2 - #price*2, y + w/2 + 10, 8)
         

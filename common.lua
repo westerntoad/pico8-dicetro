@@ -13,33 +13,6 @@ ante = {
     32767
 }
 
--- items
-item_info = {}
-item_info[0] = {
-    name = '1 pip',
-    price = 5
-}
-item_info[1] = {
-    name = '2 pip',
-    price = 5
-}
-item_info[2] = {
-    name = '3 pip',
-    price = 5
-}
-item_info[3] = {
-    name = '4 pip',
-    price = 5
-}
-item_info[4] = {
-    name = '5 pip',
-    price = 5
-}
-item_info[5] = {
-    name = '6 pip',
-    price = 5
-}
-
 curr_ante = 1
 -- 0 = moving dice
 -- 1 = picking dice

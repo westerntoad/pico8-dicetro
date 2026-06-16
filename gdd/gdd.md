@@ -31,7 +31,7 @@ Casual/roguelike
 | Name                  | Role(s)                           |
 | :-------------------- | :-------------------------------- |
 | Abraham Engebretson   | Programming, Music & Sound Design |
-|                       |                                   |
+| Luke Chung            | Game Design, Art & Playtesting    |
 
 ## Product Design
 
@@ -81,6 +81,8 @@ The player will start by rolling a single 6-sided die and earn points equal to t
 ![A screenshot of a prototype version of the game in the shop with three items, the toll of the next round, and the number of available rerolls.](./images/shop-prototype.png)
 
 ### Objectives & Progression
+
+Every round, it is the goal of the player to earn as many points as possible. The only way to increase the total number of points between rounds are via items.
 
 #### Items
 
